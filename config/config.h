@@ -66,6 +66,14 @@
 // this barrier helps to reduce user merge conflict
 // add user configurations below this line
 
+#ifdef USE_MINNIEBOT_CONFIG
+    #include "custom/minniebot_config.h"
+#endif
+
+#ifdef USE_MINNIEBOT_WIFI_CONFIG
+    #include "custom/minniebot_wifi_config.h"
+#endif
+
 
 // add user configurations above this line
 // this should be the last one
