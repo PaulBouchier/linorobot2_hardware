@@ -27,6 +27,7 @@
 #include <sensor_msgs/msg/range.h>
 #include <geometry_msgs/msg/twist.h>
 #include <geometry_msgs/msg/vector3.h>
+#include <example_interfaces/msg/int32.h>
 
 #include "config.h"
 #include "syslog.h"
@@ -46,6 +47,7 @@
 #include "wifis.h"
 #include "ota.h"
 #include "pwm.h"
+#include "minniebotservo.h"
 
 #ifdef WDT_TIMEOUT
 #include <esp_task_wdt.h>
@@ -107,6 +109,7 @@ rcl_publisher_t mag_publisher;
 rcl_subscription_t twist_subscriber;
 rcl_publisher_t battery_publisher;
 rcl_publisher_t range_publisher;
+rcl_subscription_t servo_subscriber;
 
 nav_msgs__msg__Odometry odom_msg;
 sensor_msgs__msg__Imu imu_msg;
@@ -114,6 +117,7 @@ sensor_msgs__msg__MagneticField mag_msg;
 geometry_msgs__msg__Twist twist_msg;
 sensor_msgs__msg__BatteryState battery_msg;
 sensor_msgs__msg__Range range_msg;
+example_interfaces__msg__Int32 servo_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -290,11 +294,24 @@ void twistCallback(const void * msgin)
     prev_cmd_time = millis();
 }
 
+void servoCallback(const void * msgin)
+{
+    const example_interfaces__msg__Int32 *msg = (const example_interfaces__msg__Int32 *) msgin;
+    if (msg->data > 1050 && msg->data < 1450) {
+        int servo_us = msg->data;
+        setServoUs(servo_us);
+    } else {
+        setServoUs(SERVO_DEFAULT_US);
+    }
+    syslog(LOG_INFO, "%s %d", __FUNCTION__, msg->data);
+}
+
 #ifdef JOINT_STATE_SUBSCRIBER
 
 rcl_subscription_t joint_subscriber;
 sensor_msgs__msg__JointState joint_msg;
-
+ESP32PWM::allocateTimer(3); \
+    clawServo.attach(CLAW_SERVO_PIN);
 void jointCallback(const void *msgin)
 {
     syslog(LOG_INFO, "%s %lu", __FUNCTION__, millis());
@@ -431,6 +448,13 @@ bool createEntities()
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
         TOPIC_PREFIX "cmd_vel"
     ));
+    // create servo command subscriber
+    RCCHECK(rclc_subscription_init_default(
+        &servo_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(example_interfaces, msg, Int32),
+        TOPIC_PREFIX "servo"
+    ));
 #ifdef JOINT_STATE_SUBSCRIBER
     // create joint command subscriber
     RCCHECK(rclc_subscription_init_default(
@@ -454,6 +478,13 @@ bool createEntities()
         &twist_subscriber,
         &twist_msg,
         &twistCallback,
+        ON_NEW_DATA
+    ));
+    RCCHECK(rclc_executor_add_subscription(
+        &executor,
+        &servo_subscriber,
+        &servo_msg,
+        &servoCallback,
         ON_NEW_DATA
     ));
 #ifdef JOINT_STATE_SUBSCRIBER
@@ -559,6 +590,8 @@ void setup()
     initLidar(); // after wifi connected
     battery_msg = getBattery();
     prev_voltage = battery_msg.voltage;
+    initServo();
+
 #ifdef JOINT_STATE_SUBSCRIBER
     // allocate dynamic msg memory
     static micro_ros_utilities_memory_conf_t conf = {0};

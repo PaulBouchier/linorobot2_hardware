@@ -246,6 +246,11 @@ ROBOT ORIENTATION
 // #define ECHO_PIN 32
 #define USE_SHORT_BRAKE // for shorter stopping distance
 // #define WDT_TIMEOUT 60 // Sec
+
+#define SERVO_PIN 19
+// Minniebot servo claw range: 1050 - 1450 microseconds
+#define SERVO_DEFAULT_US 1050 // default servo pulse width - jaws open
+
 #define BOARD_INIT { \
     pinMode(MOTOR1_PWM, OUTPUT); \
     digitalWrite(MOTOR1_PWM, HIGH); \
