@@ -207,9 +207,9 @@ ROBOT ORIENTATION
 #endif
 
 // Uncomment the line below to enable Arduino OTA updates.
-// #define USE_ARDUINO_OTA
+#define USE_ARDUINO_OTA
 // Uncomment the line below to enable syslog for debugging over wifi.
-// #define USE_SYSLOG
+#define USE_SYSLOG
 #ifdef USE_WIFI
   #ifndef USE_ARDUINO_OTA
     #define USE_ARDUINO_OTA
