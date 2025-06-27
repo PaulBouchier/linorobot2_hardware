@@ -1,16 +1,19 @@
 // Copyright (c) 2021 Juan Miguel Jimeno
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// http://www.apache.org/licenses/LICENSE-2.0
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef GENDRV_CONFIG_H
-#define GENDRV_CONFIG_H
+#ifndef MINNIEBOT_CONFIG_H
+#define MINNIEBOT_CONFIG_H
 
 #define LED_PIN LED_BUILTIN //used for debugging status
 
@@ -22,7 +25,7 @@
 //uncomment the motor driver you're using
 // #define USE_GENERIC_2_IN_MOTOR_DRIVER      // Motor drivers with 2 Direction Pins(INA, INB) and 1 PWM(ENABLE) pin ie. L298, L293, VNH5019
 // #define USE_GENERIC_1_IN_MOTOR_DRIVER   // Motor drivers with 1 Direction Pin(INA) and 1 PWM(ENABLE) pin.
-#define USE_BTS7960_MOTOR_DRIVER        // BTS7970 Motor Driver using A4950 (<40V) module or DRV8833 (<10V)
+#define USE_BTS7960_MOTOR_DRIVER        // BTS7970 Motor Driver
 // #define USE_ESC_MOTOR_DRIVER            // Motor ESC for brushless motors
 
 //uncomment the IMU you're using
@@ -63,27 +66,27 @@ ROBOT ORIENTATION
 //define your robot' specs here
 #define MOTOR_MAX_RPM 150                   // motor's max RPM
 #define MAX_RPM_RATIO 0.85                  // max RPM allowed for each MAX_RPM_ALLOWED = MOTOR_MAX_RPM * MAX_RPM_RATIO
-#define MOTOR_OPERATING_VOLTAGE 12          // motor's operating voltage (used to calculate max RPM)
+#define MOTOR_OPERATING_VOLTAGE 6           // motor's operating voltage (used to calculate max RPM)
 #define MOTOR_POWER_MAX_VOLTAGE 12          // max voltage of the motor's power source (used to calculate max RPM)
 #define MOTOR_POWER_MEASURED_VOLTAGE 12     // current voltage reading of the power connected to the motor (used for calibration)
-#define COUNTS_PER_REV1 450                 // wheel1 encoder's no of ticks per rev
-#define COUNTS_PER_REV2 450                 // wheel2 encoder's no of ticks per rev
+#define COUNTS_PER_REV1 1800                // wheel1 encoder's no of ticks per rev
+#define COUNTS_PER_REV2 1800                // wheel2 encoder's no of ticks per rev
 #define COUNTS_PER_REV3 450                 // wheel3 encoder's no of ticks per rev
 #define COUNTS_PER_REV4 450                 // wheel4 encoder's no of ticks per rev
-#define WHEEL_DIAMETER 0.0560               // wheel's diameter in meters
-#define LR_WHEELS_DISTANCE 0.224            // distance between left and right wheels
+#define WHEEL_DIAMETER 0.08                 // wheel's diameter in meters
+#define LR_WHEELS_DISTANCE 0.160            // distance between left and right wheels
 #define PWM_BITS 10                         // PWM Resolution of the microcontroller
 #define PWM_FREQUENCY 20000                 // PWM Frequency
 
 // INVERT ENCODER COUNTS
-#define MOTOR1_ENCODER_INV false
-#define MOTOR2_ENCODER_INV false
+#define MOTOR1_ENCODER_INV true
+#define MOTOR2_ENCODER_INV true
 #define MOTOR3_ENCODER_INV false
 #define MOTOR4_ENCODER_INV false
 
 // INVERT MOTOR DIRECTIONS
-#define MOTOR1_INV false
-#define MOTOR2_INV false
+#define MOTOR1_INV true
+#define MOTOR2_INV true
 #define MOTOR3_INV false
 #define MOTOR4_INV false
 
@@ -160,7 +163,7 @@ ROBOT ORIENTATION
   #define MOTOR4_IN_A -1
   #define MOTOR4_IN_B -1
 
-  #define PWM_MAX pow(2, PWM_BITS) - 1
+  #define PWM_MAX ((pow(2, PWM_BITS) - 1) / 2)
   #define PWM_MIN -PWM_MAX
 #endif
 
@@ -197,40 +200,29 @@ ROBOT ORIENTATION
   #include "wifi_config.h"
 #else
   // Enable WiFi with null terminated list of multiple APs SSID and password
-  // #define WIFI_AP_LIST {{"WIFI_SSID", "WIFI_PASSWORD"}, {NULL, NULL}}
+  // #define WIFI_AP_LIST {{"WIFI_SSID", "WIFI_PASSWORD"}, {NULL}}
   #define AGENT_IP { 192, 168, 1, 100 }
   #define SYSLOG_SERVER { 192, 168, 1, 100 }
   #define LIDAR_SERVER { 192, 168, 1, 100 }
 #endif
-
-// Uncomment the line below to enable Arduino OTA updates.
-#define USE_ARDUINO_OTA
-// Uncomment the line below to enable syslog for debugging over wifi.
-#define USE_SYSLOG
-#ifdef USE_WIFI
-  #ifndef USE_ARDUINO_OTA
-    #define USE_ARDUINO_OTA
-  #endif
-  #ifndef USE_SYSLOG
-    #define USE_SYSLOG
-  #endif
-#endif
-
-#define WIFI_MONITOR 2 // min. period to send wifi signal strength to syslog
 #define AGENT_PORT 8888
+// Enable WiFi with null terminated list of multiple APs SSID and password
+// #define WIFI_AP_LIST {{"129Linky", "129Robots"}, {NULL}}
+#define WIFI_MONITOR 2 // min. period to send wifi signal strength to syslog
+#define USE_ARDUINO_OTA
+#define USE_SYSLOG
 #define SYSLOG_PORT 514
-#define DEVICE_HOSTNAME "gendrv"
+#define DEVICE_HOSTNAME "minniebot"
 #define APP_NAME "hardware"
 // #define USE_LIDAR_UDP  // send lidar data to udp server
 #define LIDAR_RXD 4
-// #define LIDAR_PWM 15
 #define LIDAR_SERIAL 1 // uart number
 #define LIDAR_BAUDRATE 230400
 #define LIDAR_PORT 8889
 #define BAUDRATE 921600
 #define SDA_PIN 32 // specify I2C pins
 #define SCL_PIN 33
-#define NODE_NAME "gendrv"
+#define NODE_NAME "minniebot"
 // #define TOPIC_PREFIX "gendrv/"
 // #define CONTROL_TIMER 20
 // #define BATTERY_TIMER 2000
@@ -238,13 +230,9 @@ ROBOT ORIENTATION
 // battery voltage ADC pin
 // #define BATTERY_PIN 33
 // 3.3V ref, 12 bits ADC, 33k + 10k voltage divider
-// Change the following to suit your battery voltage divider and ADC reference voltage.
-// Pico uses analogRead(): 3.3V ref, 12 bits ADC, 10k + 1k voltage divider
-// #define BATTERY_ADJUST(v) ((v) * (3.3 / 4096 * (10 + 1) / 1))
-// ESP32 uses analogReadMilliVolts() which returns voltage in mV
-#define BATTERY_ADJUST(v) ((v) * ((10 + 1) / 1) / 1000.0)
+#define BATTERY_ADJUST(v) ((v) * (3.3 / 4096 * (33 + 10) / 10))
 #define USE_INA219
-// #define BATTERY_DIP 0.98  // battery voltage drop alert
+#define BATTERY_DIP 0.98  // battery voltage drop alert
 // #define BATTERY_CAP 2.0  // battery capacity Ah
 // #define BATTERY_MIN 9.0  // battery minimal voltage
 // #define BATTERY_MAX 12.6 // battery maximum voltage
@@ -267,11 +255,11 @@ ROBOT ORIENTATION
 #ifdef USE_SYSLOG
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){ \
     syslog(LOG_ERR, "%s RCCHECK failed %d", __FUNCTION__, temp_rc); \
-    }}
+    return false; }}
 #else
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){ \
     flashLED(3); \
-    }} // do not block
+    return false; }} // do not block
 #endif
 
 #endif
