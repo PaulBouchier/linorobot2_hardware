@@ -23,9 +23,9 @@
 // #define LINO_BASE MECANUM               // Mecanum drive robot
 
 //uncomment the motor driver you're using
-// #define USE_GENERIC_2_IN_MOTOR_DRIVER      // Motor drivers with 2 Direction Pins(INA, INB) and 1 PWM(ENABLE) pin ie. L298, L293, VNH5019
+#define USE_GENERIC_2_IN_MOTOR_DRIVER      // Motor drivers with 2 Direction Pins(INA, INB) and 1 PWM(ENABLE) pin ie. L298, L293, VNH5019
 // #define USE_GENERIC_1_IN_MOTOR_DRIVER   // Motor drivers with 1 Direction Pin(INA) and 1 PWM(ENABLE) pin.
-#define USE_BTS7960_MOTOR_DRIVER        // BTS7970 Motor Driver using A4950 (<40V) module or DRV8833 (<10V)
+// #define USE_BTS7960_MOTOR_DRIVER        // BTS7970 Motor Driver using A4950 (<40V) module or DRV8833 (<10V)
 // #define USE_ESC_MOTOR_DRIVER            // Motor ESC for brushless motors
 
 //uncomment the IMU you're using
@@ -94,7 +94,7 @@ ROBOT ORIENTATION
 #define MOTOR4_INV false
 
 // ENCODER PINS
-#define MOTOR1_ENCODER_A 36
+#define MOTOR1_ENCODER_A 19
 #define MOTOR1_ENCODER_B 39
 
 #define MOTOR2_ENCODER_A 35
@@ -109,8 +109,8 @@ ROBOT ORIENTATION
 // MOTOR PINS
 #ifdef USE_GENERIC_2_IN_MOTOR_DRIVER
   #define MOTOR1_PWM 21
-  #define MOTOR1_IN_A 20
-  #define MOTOR1_IN_B 1
+  #define MOTOR1_IN_A 17
+  #define MOTOR1_IN_B 16
 
   #define MOTOR2_PWM 5
   #define MOTOR2_IN_A 6
