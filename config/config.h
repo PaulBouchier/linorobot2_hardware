@@ -42,6 +42,9 @@
 // this barrier helps to reduce user merge conflict
 // add user configurations below this line
 
+#ifdef USE_MOWBERRY_CONFIG
+    #include "custom/mowberry_config.h"
+#endif
 
 // add user configurations above this line
 
