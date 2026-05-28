@@ -49,7 +49,8 @@ public:
 			pin2 = temp_pin;
 		}
 		counts_per_rev_ = counts_per_rev;
-		encoder_.attachHalfQuad(pin1, pin2);
+		ESP32Encoder::useInternalWeakPullResistors = puType::up;
+		encoder_.attachSingleEdge(pin1, pin2);
 	}
 	float getRPM() {
 	        if (counts_per_rev_ < 0) return 0.0;
