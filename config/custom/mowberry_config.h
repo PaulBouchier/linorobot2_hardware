@@ -222,6 +222,9 @@ ROBOT ORIENTATION
 #define NODE_NAME "mowberry"
 // #define TOPIC_PREFIX "mowberry/"
 
+// If using Roboremo app over BT, uncomment the following lines
+#define USE_ROBOREMO
+
 // battery voltage ADC pin
 #define BATTERY_PIN 33
 // 3.3V ref, 12 bits ADC, 33k + 10k voltage divider
@@ -240,9 +243,12 @@ const int16_t ADC_LUT[4096] = { /* insert adc_calibrate data here */ };
 #define BOARD_INIT { \
     Wire.begin(SDA_PIN, SCL_PIN); \
     Wire.setClock(400000); \
+    roboRemoBegin(); \
 }
 // #define BOARD_INIT_LATE {}
-// #define BOARD_LOOP {}
+#define BOARD_LOOP { \
+    roboRemoLoop(); \
+}
 
 #ifdef USE_SYSLOG
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){ \

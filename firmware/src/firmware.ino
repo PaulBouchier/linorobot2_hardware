@@ -83,6 +83,7 @@ nav_msgs__msg__Odometry odom_msg;
 sensor_msgs__msg__Imu imu_msg;
 sensor_msgs__msg__MagneticField mag_msg;
 geometry_msgs__msg__Twist twist_msg;
+geometry_msgs__msg__Twist twist_msg_rcvd;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -134,6 +135,13 @@ MAG mag;
 #ifndef BAUDRATE
 #define BAUDRATE 921600
 #endif
+
+// Roboremo variables
+#ifdef USE_ROBOREMO
+#include "Roboremo.h"
+Roboremo roboremo;
+#endif
+bool autonomyDisabled = false;
 
 void setup() 
 {
@@ -243,8 +251,14 @@ void controlCallback(rcl_timer_t * timer, int64_t last_call_time)
 
 void twistCallback(const void * msgin) 
 {
+    if (autonomyDisabled) 
+        return;  // prev_cmd_time is not updated, so it will stop the robot after a short time
+    
     digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-
+    // copy the received command to the global twist_msg, which will be used in moveBase to calculate the required RPM for each motor
+    twist_msg.linear.x = twist_msg_rcvd.linear.x;
+    twist_msg.linear.y = twist_msg_rcvd.linear.y;
+    twist_msg.angular.z = twist_msg_rcvd.angular.z;
     prev_cmd_time = millis();
 }
 
@@ -304,7 +318,7 @@ bool createEntities()
     RCCHECK(rclc_executor_add_subscription(
         &executor, 
         &twist_subscriber, 
-        &twist_msg, 
+        &twist_msg_rcvd, 
         &twistCallback, 
         ON_NEW_DATA
     ));
@@ -353,7 +367,7 @@ void fullStop()
 void moveBase()
 {
     // brake if there's no command received, or when it's only the first command sent
-    if(((millis() - prev_cmd_time) >= 200)) 
+    if(((millis() - prev_cmd_time) >= 1000)) 
     {
         twist_msg.linear.x = 0.0;
         twist_msg.linear.y = 0.0;
@@ -489,4 +503,18 @@ void flashLED(int n_times)
         delay(150);
     }
     delay(1000);
+}
+
+void roboRemoBegin()
+{
+#ifdef USE_ROBOREMO
+    roboremo.begin();
+#endif
+}
+
+void roboRemoLoop()
+{
+#ifdef USE_ROBOREMO
+    //roboremo.loop();
+#endif
 }
