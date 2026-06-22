@@ -20,9 +20,26 @@ Roboremo::Roboremo() :
     memset(cmd, 0, sizeof(cmd));
 }
 
+Roboremo::~Roboremo() {
+    if (BTTaskHandle != NULL) {
+        vTaskDelete(BTTaskHandle);
+    }
+    SerialBT.end();
+}
+
 void Roboremo::begin() {
+    return; // Disable Bluetooth processing for now
     SerialBT.begin("Mowberry");  // Bluetooth device name
-    //syslog(LOG_INFO, "%s: The device with name \"Mowberry\" is started. Now you can connect with Bluetooth!", __FUNCTION__);
+
+    xTaskCreatePinnedToCore(
+        btTaskWorker,           /* Task function. */
+        "BT_Serial_Task",       /* Name of task. */
+        4096,                   /* Stack size in words. */
+        this,                   /* Parameter of the task */
+        1,                      /* Priority of the task (Low-to-medium) */
+        &BTTaskHandle,          /* Task handle to keep track of created task */
+        1                       /* Pin task to Core 1 (Leaves Core 0 for radio stacks) */
+    );
 
     cmdIndex = 0;
     axf = 0.0;
@@ -37,6 +54,35 @@ void Roboremo::begin() {
     lastDeadmanTime = 0;
     deadmanActive = false;
     nextPingTime = millis() + 500;
+}
+
+// Thread-isolated Bluetooth execution logic running on Core 1
+void Roboremo::btTaskWorker (void * pvParameters) {
+    Roboremo* roboremo = static_cast<Roboremo*>(pvParameters);
+    roboremo->btTaskLoop();
+    // Crucial: yield execution back to FreeRTOS scheduler to prevent crashes
+    vTaskDelay(pdMS_TO_TICKS(5)); 
+}
+
+void Roboremo::btTaskLoop() {
+    return; // Disable Bluetooth processing for now
+
+    for(;;) {
+        if (SerialBT.available()) {
+            char incomingByte = SerialBT.read();
+            //cmd[cmdIndex] = c;
+            //if (cmdIndex < 99)
+            //    cmdIndex++;
+            //cmd[cmdIndex] = '\0';
+
+            if (incomingByte == '\n') {
+                syslog(LOG_INFO, "Received Bluetooth command: %s", cmd);
+                // Process incoming Bluetooth Serial commands safely here
+                // exeCmd();
+                //cmdIndex = 0;
+            }
+        }
+    }
 }
 
 void Roboremo::sendTeleop(float v, float rotSpeed) {
@@ -111,8 +157,8 @@ void Roboremo::exeCmd() {
             sendAutoRun(disableAutoRun);
     }
 }
-
 void Roboremo::loop() {
+    return; // Disable Bluetooth processing for now
     deadmanTime = millis();
     teleopTime = millis();
 

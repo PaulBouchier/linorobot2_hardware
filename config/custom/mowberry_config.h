@@ -43,6 +43,9 @@
 // #define IMU_TWEAK {}
 // #define MAG_TWEAK {}
 
+// uncomment if using Roboremo app over BT
+#define USE_ROBOREMO
+
 #define ACCEL_COV { 0.01, 0.01, 0.01 }
 #define GYRO_COV { 0.001, 0.001, 0.001 }
 #define ORI_COV { 0.01, 0.01, 0.01 }
@@ -222,9 +225,6 @@ ROBOT ORIENTATION
 #define NODE_NAME "mowberry"
 // #define TOPIC_PREFIX "mowberry/"
 
-// If using Roboremo app over BT, uncomment the following lines
-#define USE_ROBOREMO
-
 // battery voltage ADC pin
 #define BATTERY_PIN 33
 // 3.3V ref, 12 bits ADC, 33k + 10k voltage divider
@@ -240,14 +240,17 @@ const int16_t ADC_LUT[4096] = { /* insert adc_calibrate data here */ };
 // #define ECHO_PIN 32
 #define USE_SHORT_BRAKE // for shorter stopping distance
 // #define WDT_TIMEOUT 60 // Sec
+
 #define BOARD_INIT { \
     Wire.begin(SDA_PIN, SCL_PIN); \
     Wire.setClock(400000); \
-    roboRemoBegin(); \
+    beginCustomLinoObjects(); \
 }
+
 // #define BOARD_INIT_LATE {}
+
 #define BOARD_LOOP { \
-    roboRemoLoop(); \
+    loopCustomLinoObjects(); \
 }
 
 #ifdef USE_SYSLOG
@@ -260,4 +263,4 @@ const int16_t ADC_LUT[4096] = { /* insert adc_calibrate data here */ };
     }} // do not block
 #endif
 
-#endif
+#endif  // MOWBERRY_CONFIG_H
