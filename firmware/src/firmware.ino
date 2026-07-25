@@ -494,7 +494,7 @@ void flashLED(int n_times)
 /*========== ADDITIONAL FUNCTIONS ==========*/
 #ifdef USE_ROBOREMO
 #include "Roboremo.h"
-Roboremo roboremo;
+Roboremo roboremo(twist_msg, prev_cmd_time);
 #endif
 
 void beginCustomLinoObjects() {
@@ -504,7 +504,7 @@ void beginCustomLinoObjects() {
 }
 
 void loopCustomLinoObjects() {
-//#ifdef USE_ROBOREMO
-//    roboremo.loop();
-//#endif
+#ifdef USE_ROBOREMO
+    roboremo.loop();
+#endif
 }

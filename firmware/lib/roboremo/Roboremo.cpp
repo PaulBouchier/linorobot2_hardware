@@ -2,10 +2,13 @@
 #include <string>
 #include <cstdlib>
 
-Roboremo::Roboremo() : 
+#define RXD2 16
+#define TXD2 17
+
+Roboremo::Roboremo(geometry_msgs__msg__Twist & twist_msg, unsigned long & prev_cmd_time) : 
     cmdIndex(0),
-    maxSpeed(0.35),
-    maxRotSpeed(0.3),
+    maxSpeed(0.7),
+    maxRotSpeed(0.8),
     axf(0.0), ayf(0.0), azf(0.0),
     teleopTime(0),
     lastTeleopTime(0),
@@ -15,31 +18,15 @@ Roboremo::Roboremo() :
     deadmanTime(0),
     lastDeadmanTime(0),
     deadmanActive(false),
-    nextPingTime(0)
+    nextPingTime(0),
+    twist_msg(twist_msg),
+    prev_cmd_time(prev_cmd_time)
 {
     memset(cmd, 0, sizeof(cmd));
 }
 
-Roboremo::~Roboremo() {
-    if (BTTaskHandle != NULL) {
-        vTaskDelete(BTTaskHandle);
-    }
-    SerialBT.end();
-}
-
 void Roboremo::begin() {
-    return; // Disable Bluetooth processing for now
-    SerialBT.begin("Mowberry");  // Bluetooth device name
-
-    xTaskCreatePinnedToCore(
-        btTaskWorker,           /* Task function. */
-        "BT_Serial_Task",       /* Name of task. */
-        4096,                   /* Stack size in words. */
-        this,                   /* Parameter of the task */
-        1,                      /* Priority of the task (Low-to-medium) */
-        &BTTaskHandle,          /* Task handle to keep track of created task */
-        1                       /* Pin task to Core 1 (Leaves Core 0 for radio stacks) */
-    );
+    Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
 
     cmdIndex = 0;
     axf = 0.0;
@@ -56,37 +43,11 @@ void Roboremo::begin() {
     nextPingTime = millis() + 500;
 }
 
-// Thread-isolated Bluetooth execution logic running on Core 1
-void Roboremo::btTaskWorker (void * pvParameters) {
-    Roboremo* roboremo = static_cast<Roboremo*>(pvParameters);
-    roboremo->btTaskLoop();
-    // Crucial: yield execution back to FreeRTOS scheduler to prevent crashes
-    vTaskDelay(pdMS_TO_TICKS(5)); 
-}
-
-void Roboremo::btTaskLoop() {
-    return; // Disable Bluetooth processing for now
-
-    for(;;) {
-        if (SerialBT.available()) {
-            char incomingByte = SerialBT.read();
-            //cmd[cmdIndex] = c;
-            //if (cmdIndex < 99)
-            //    cmdIndex++;
-            //cmd[cmdIndex] = '\0';
-
-            if (incomingByte == '\n') {
-                syslog(LOG_INFO, "Received Bluetooth command: %s", cmd);
-                // Process incoming Bluetooth Serial commands safely here
-                // exeCmd();
-                //cmdIndex = 0;
-            }
-        }
-    }
-}
-
 void Roboremo::sendTeleop(float v, float rotSpeed) {
-    syslog(LOG_INFO, "%s: Teleop v: %0.2f r: %0.2f", __FUNCTION__, v, rotSpeed);
+    // syslog(LOG_INFO, "%s: Teleop v: %0.2f r: %0.2f", __FUNCTION__, v, rotSpeed);
+    twist_msg.linear.x = v;
+    twist_msg.angular.z = rotSpeed;
+    prev_cmd_time = millis();
 }
 
 void Roboremo::sendAutoRun(int disable) {
@@ -158,12 +119,11 @@ void Roboremo::exeCmd() {
     }
 }
 void Roboremo::loop() {
-    return; // Disable Bluetooth processing for now
     deadmanTime = millis();
     teleopTime = millis();
 
-    if (SerialBT.available()) {
-        char c = (char)SerialBT.read();
+    if (Serial2.available()) {
+        char c = (char)Serial2.read();
         cmd[cmdIndex] = c;
         if (cmdIndex < 99)
             cmdIndex++;
@@ -180,14 +140,13 @@ void Roboremo::loop() {
         nextPingTime = millis() + 500;
         char hiString[] = "hi 1\n";
         for (int i = 0; i < (int)strlen(hiString); i++) {
-            SerialBT.write(hiString[i]);
+            Serial2.write(hiString[i]);
         }
         char autoString[50];
         int autoEnabled = disableAutoRun ? 0 : 1;
         sprintf(autoString, "ae %d\n", autoEnabled);
         for (int i = 0; i < (int)strlen(autoString); i++) {
-            SerialBT.write(autoString[i]);
+            Serial2.write(autoString[i]);
         }
     }
-    delay(20);
 }
