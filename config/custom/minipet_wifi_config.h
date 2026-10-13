@@ -153,8 +153,8 @@ ROBOT ORIENTATION
   #define MOTOR1_IN_B 25
 
   #define MOTOR2_PWM 26 //DON'T TOUCH THIS! This is just a placeholder
-  #define MOTOR2_IN_A 22
-  #define MOTOR2_IN_B 23
+  #define MOTOR2_IN_A 23
+  #define MOTOR2_IN_B 22
 
   #define MOTOR3_PWM -1 //DON'T TOUCH THIS! This is just a placeholder
   #define MOTOR3_IN_A -1
@@ -196,7 +196,7 @@ ROBOT ORIENTATION
 // Home network
 #define WIFI_AP_LIST {{"129WoodrowM", "Listen4wifi!"}, {NULL}}
 #define AGENT_IP { 192, 168, 4, 233 }  // home wifi
-#define SYSLOG_SERVER { 192, 168, 4, 252 }
+#define SYSLOG_SERVER { 192, 168, 4, 233 }
 #define LIDAR_SERVER { 192, 168, 4, 233 }  // eg IP of the desktop computer
 
 // Paul's cell hotspot
@@ -251,9 +251,9 @@ ROBOT ORIENTATION
 // #define BATTERY_TIMER 2000
 
 // battery voltage ADC pin
-// #define BATTERY_PIN 33
+#define BATTERY_PIN 33
 // 3.3V ref, 12 bits ADC, 33k + 10k voltage divider
-// #define BATTERY_ADJUST(v) ((v) * (3.3 / 4096 * (33 + 10) / 10))
+#define BATTERY_ADJUST(v) ((v) * (3.3 / 4096 * (33 + 10) / 10))
 // #define USE_INA219
 // #define BATTERY_DIP 0.98  // battery voltage drop alert
 // #define BATTERY_CAP 2.0  // battery capacity Ah
