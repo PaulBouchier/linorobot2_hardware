@@ -247,7 +247,6 @@ ROBOT ORIENTATION
     digitalWrite(MOTOR2_PWM, HIGH); \
     Wire.begin(SDA_PIN, SCL_PIN); \
     Wire.setClock(100000); /* 100kHz tolerates motor noise better than 400kHz */ \
-    Wire.setTimeOut(5);    /* ms; keep a glitched transaction from stalling the control loop */ \
 }
 // #define BOARD_INIT_LATE {}
 // #define BOARD_LOOP {}
