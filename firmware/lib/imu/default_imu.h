@@ -321,6 +321,11 @@ class BNO085IMU: public IMUInterface
         int validPacketCount = 0;
         int configAttempts = 0;
 
+        // Motor noise can corrupt individual I2C reads. Only revalidate the IMU after the
+        // stream has been silent this long, so a single bad read doesn't stall the control loop.
+        const unsigned long dataStreamTimeoutMs = 500;
+        unsigned long lastImuDataTime = 0;
+
     public:
         BNO085IMU()
         {
@@ -455,6 +460,7 @@ class BNO085IMU: public IMUInterface
 
             if (validPacketCount >= 10) {
                 syslog(LOG_INFO, "%s [SUCCESS] Navigation data streams verified numeric!", __FUNCTION__);
+                lastImuDataTime = millis();
                 imuState = STATE_RUNNING;
             }
             else if (millis() - stateTimer >= 1500) {
@@ -467,6 +473,7 @@ class BNO085IMU: public IMUInterface
 
           case STATE_RUNNING:
             if (bno085_.dataAvailable() == true) {
+                lastImuDataTime = millis();
                 // Enforce the layout check in real-time execution to prevent background packets from causing spikes
                 if (bno085_.getReadings() == SENSOR_REPORTID_GAME_ROTATION_VECTOR) {
 // Uncomment the following line to log the IMU data to syslog for debugging purposes
@@ -483,11 +490,12 @@ class BNO085IMU: public IMUInterface
 #endif
                 }
                 return true;  // IMU is fully initialized and running and we can use its data
-            } else {
-                syslog(LOG_INFO, "%s [WARNING] Data stream interrupted. Revalidating...", __FUNCTION__);
+            } else if (millis() - lastImuDataTime >= dataStreamTimeoutMs) {
+                syslog(LOG_INFO, "%s [WARNING] Data stream interrupted for %lu ms. Revalidating...", __FUNCTION__, millis() - lastImuDataTime);
                 imuState = STATE_DISCONNECTED;
+                break;
             }
-            break;
+            return true;  // brief gap: keep publishing the last good sample
         }
         return false;  // if we don't return true from STATE_RUNNING, we are not fully initialized yet
         }
