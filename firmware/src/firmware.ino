@@ -94,6 +94,20 @@ static inline void set_microros_net_transports(IPAddress agent_ip, uint16_t agen
 #ifndef RCSOFTCHECK
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
 #endif
+// Run the given code and syslog if it took longer than LIMIT ms, to locate main-loop stalls.
+// Enabled by defining SLOW_SECTION_MS (the default limit) in the board config.
+#ifdef SLOW_SECTION_MS
+#define TIME_SECTION(NAME, LIMIT, ...)  do { \
+  unsigned long t0_ = millis(); \
+  __VA_ARGS__; \
+  unsigned long dt_ = millis() - t0_; \
+  if (dt_ > (LIMIT)) syslog(LOG_WARNING, "%s slow %s %lu ms at %lu", __FUNCTION__, NAME, dt_, millis()); \
+} while (0)
+#else
+#define SLOW_SECTION_MS 0
+#define TIME_SECTION(NAME, LIMIT, ...)  do { __VA_ARGS__; } while (0)
+#endif
+
 #define EXECUTE_EVERY_N_MS(MS, X)  do { \
   static volatile int64_t init = -1; \
   if (init == -1) { init = uxr_millis();} \
@@ -282,11 +296,14 @@ void loop() {
             break;
         case AGENT_CONNECTED:
 #ifndef USE_STAY_CONNECTED // Stay connected. Do not ping.
-            EXECUTE_EVERY_N_MS(200, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
+            EXECUTE_EVERY_N_MS(200, TIME_SECTION("ping", SLOW_SECTION_MS + 100,
+                state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED));
 #endif
             if (state == AGENT_CONNECTED) 
             {
-                rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
+                // spin_some may legitimately wait up to its 100 ms timeout for work
+                TIME_SECTION("spin_some", SLOW_SECTION_MS + 100,
+                    rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
             }
             break;
         case AGENT_DISCONNECTED:
@@ -313,8 +330,8 @@ void controlCallback(rcl_timer_t * timer, int64_t last_call_time)
     RCLC_UNUSED(last_call_time);
     if (timer != NULL) 
     {
-       moveBase();
-       publishData();
+       TIME_SECTION("moveBase", SLOW_SECTION_MS, moveBase());
+       TIME_SECTION("publishData", SLOW_SECTION_MS, publishData());
     }
 }
 
@@ -532,11 +549,11 @@ void publishData()
 {
     static unsigned skip_dip = 0;
     odom_msg = odometry.getData();
-    imu_msg = imu.getData();
+    TIME_SECTION("imu.getData", SLOW_SECTION_MS, imu_msg = imu.getData());
 #ifdef USE_FAKE_IMU
     imu_msg.angular_velocity.z = odom_msg.twist.twist.angular.z;
 #endif
-    mag_msg = mag.getData();
+    TIME_SECTION("mag.getData", SLOW_SECTION_MS, mag_msg = mag.getData());
 #ifdef MAG_BIAS
     const float mag_bias[3] = MAG_BIAS;
     mag_msg.magnetic_field.x -= mag_bias[0];
@@ -557,13 +574,13 @@ void publishData()
     mag_msg.header.stamp.nanosec = time_stamp.tv_nsec;
 #endif
 
-    RCSOFTCHECK(rcl_publish(&imu_publisher, &imu_msg, NULL));
+    TIME_SECTION("publish imu", SLOW_SECTION_MS, RCSOFTCHECK(rcl_publish(&imu_publisher, &imu_msg, NULL)));
 #ifndef USE_FAKE_MAG
-    RCSOFTCHECK(rcl_publish(&mag_publisher, &mag_msg, NULL));
+    TIME_SECTION("publish mag", SLOW_SECTION_MS, RCSOFTCHECK(rcl_publish(&mag_publisher, &mag_msg, NULL)));
 #endif
-    RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
+    TIME_SECTION("publish odom", SLOW_SECTION_MS, RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL)));
 #if defined(BATTERY_PIN) || defined(USE_INA219)
-    battery_msg = getBattery();
+    TIME_SECTION("getBattery", SLOW_SECTION_MS, battery_msg = getBattery());
     battery_msg.header.stamp.sec = time_stamp.tv_sec;
     battery_msg.header.stamp.nanosec = time_stamp.tv_nsec;
 #ifdef BATTERY_DIP
