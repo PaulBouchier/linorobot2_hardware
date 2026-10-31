@@ -1,0 +1,11 @@
+kaiaai-esp32/data/config.yaml (at the top, under "Board-specific assignments")
+
+lidar:   gpio: tx 35, rx 27, pwm 13, en 32
+led:     system.driver.gpio: 2
+button:  boot.gpio: 0
+monitor: gpio.tx: 1
+motor:
+  left:  encoder a 39 / b 36,  driver in1 26 / in2 25
+  right: encoder a 17 / b 16,  driver in1 23 / in2 22
+adc:     battery.gpio: 33
+
