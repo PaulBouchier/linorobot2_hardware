@@ -236,7 +236,7 @@ ROBOT ORIENTATION
 #define LIDAR_PORT 8889
 #define BAUDRATE 921600
 #define SDA_PIN 21 // specify I2C pins
-#define SCL_PIN 22
+#define SCL_PIN 19
 #define NODE_NAME "minipet"
 // #define TOPIC_PREFIX "esp32/"
 
