@@ -229,7 +229,8 @@ ROBOT ORIENTATION
 #define DEVICE_HOSTNAME "minipet"
 #define APP_NAME "hardware"
 #define USE_LIDAR_UDP
-#define LIDAR_RXD 35
+//#define LIDAR_RXD 35
+#define LIDAR_RXD 4
 // #define LIDAR_PWM 15
 #define LIDAR_SERIAL 1 // uart number
 #define LIDAR_BAUDRATE 230400
