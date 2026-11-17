@@ -267,6 +267,7 @@ void setup()
 }
 
 void loop() {
+    reportLidarStats();
     switch (state) 
     {
         case WAITING_AGENT:

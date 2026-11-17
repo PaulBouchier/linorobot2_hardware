@@ -229,11 +229,11 @@ ROBOT ORIENTATION
 #define DEVICE_HOSTNAME "minipet"
 #define APP_NAME "hardware"
 #define USE_LIDAR_UDP
-//#define LIDAR_RXD 35
-#define LIDAR_RXD 4
+#define LIDAR_RXD 35
 // #define LIDAR_PWM 15
 #define LIDAR_SERIAL 1 // uart number
-#define LIDAR_BAUDRATE 230400
+#define LIDAR_BAUDRATE 230400 // LD14P/LD19/LD06 = 230400
+// #define LIDAR_STATS // log lidar UART/UDP counters every 2s to Serial and syslog
 #define LIDAR_PORT 8889
 #define BAUDRATE 921600
 #define SDA_PIN 21 // specify I2C pins

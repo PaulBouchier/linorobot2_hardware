@@ -17,5 +17,6 @@
 void poweronLidar(void);
 void poweroffLidar(void);
 void initLidar(void);
+void reportLidarStats(void);
 
 #endif
